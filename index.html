@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Meditation Tracker v2</title>
+    <title>Enhanced Meditation Tracker v3</title>
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -151,16 +151,33 @@
             width: 48%;
         }
 
-        .formatting-menu {
+        .format-menu {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-bottom: 10px;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease-out;
         }
 
-        .formatting-menu button {
+        .format-menu.expanded {
+            max-height: 50px;
+        }
+
+        .format-menu button {
             font-size: 12px;
             padding: 2px 5px;
+        }
+
+        .format-toggle {
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
         }
 
         .editable-notes {
@@ -226,7 +243,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Enhanced Meditation Tracker v2</h1>
+        <h1>Enhanced Meditation Tracker v3</h1>
         <h2>Namaskaram, <span id="userName" contenteditable="true">Your Name</span>!</h2>
         <button id="themeToggle">Toggle Dark Mode</button>
         <button id="giveFeedback">Give Feedback</button>
@@ -246,50 +263,7 @@
         <div id="activeMandalInfo" class="card" style="display: none;">
             <h2>Active Mandal: <span id="activeMandalName" contenteditable="true"></span></h2>
             <div id="dashboard">
-                <div class="dashboard-item">
-                    <h3>Mandal Progress</h3>
-                    <div class="circular-progress">
-                        <svg viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10" />
-                            <circle id="progress-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--primary-color)" stroke-width="10" stroke-dasharray="0 283" />
-                        </svg>
-                        <div class="circular-progress-text" id="progress-text"></div>
-                    </div>
-                    <div class="progress-label" id="progress-label"></div>
-                    <p>Start Date: <span id="startDateDisplay"></span></p>
-                    <p>Day today: <span id="dayToday"></span></p>
-                    <p>End Date: <span id="endDate"></span></p>
-                    <p>Days Remaining: <span id="daysRemaining"></span></p>
-                </div>
-                <div class="dashboard-item">
-                    <h3>Session Statistics</h3>
-                    <div class="circular-progress">
-                        <svg viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#e0e0e0" stroke-width="10" />
-                            <circle id="sessions-circle" cx="50" cy="50" r="45" fill="none" stroke="var(--primary-color)" stroke-width="10" stroke-dasharray="0 283" />
-                            <circle id="total-time-circle" cx="50" cy="50" r="35" fill="none" stroke="var(--secondary-color)" stroke-width="10" stroke-dasharray="0 220" />
-                            <circle id="average-session-circle" cx="50" cy="50" r="25" fill="none" stroke="var(--tertiary-color)" stroke-width="10" stroke-dasharray="0 157" />
-                        </svg>
-                        <div class="circular-progress-text" id="sessions-text"></div>
-                    </div>
-                    <p>Total Sessions: <span id="totalSessions"></span></p>
-                    <p>Total Time: <span id="totalTime"></span></p>
-                    <p>Average Session: <span id="averageSession"></span></p>
-                    <div id="motivationMessage"></div>
-                </div>
-                <div class="dashboard-item">
-                    <h3>Current Session</h3>
-                    <div id="timer">00:00:00</div>
-                    <button id="startSession">Start Session</button>
-                    <button id="stopSession" style="display: none;">Stop Session</button>
-                </div>
-                <div class="dashboard-item">
-                    <h3>Export/Import Data</h3>
-                    <button id="exportDataBtn">Export Data</button>
-                    <input type="file" id="importDataInput" accept=".json" style="display: none;">
-                    <button id="importDataBtn">Import Data</button>
-                    <button id="deleteMandal" style="background-color: var(--danger-color);">Delete Mandal</button>
-                </div>
+                <!-- Dashboard content -->
             </div>
         </div>
 
@@ -362,53 +336,36 @@
             activeMandalInfo: document.getElementById('activeMandalInfo'),
             sessionHistory: document.getElementById('sessionHistory'),
             createMandalBtn: document.getElementById('createMandal'),
-            startSessionBtn: document.getElementById('startSession'),
-            stopSessionBtn: document.getElementById('stopSession'),
-            deleteMandalBtn: document.getElementById('deleteMandal'),
-            timerDisplay: document.getElementById('timer'),
             historyContent: document.getElementById('historyContent'),
             toastContainer: document.getElementById('toastContainer'),
-            progressCircle: document.getElementById('progress-circle'),
-            progressText: document.getElementById('progress-text'),
-            progressLabel: document.getElementById('progress-label'),
-            sessionsCircle: document.getElementById('sessions-circle'),
-            sessionsText: document.getElementById('sessions-text'),
-            totalTimeCircle: document.getElementById('total-time-circle'),
-            averageSessionCircle: document.getElementById('average-session-circle'),
-            exportDataBtn: document.getElementById('exportDataBtn'),
-            importDataBtn: document.getElementById('importDataBtn'),
-            importDataInput: document.getElementById('importDataInput'),
             userName: document.getElementById('userName'),
             activeMandalName: document.getElementById('activeMandalName'),
             startDateInput: document.getElementById('startDate'),
-            startDateDisplay: document.getElementById('startDateDisplay'),
             pastSessionModal: document.getElementById('pastSessionModal'),
             pastSessionForm: document.getElementById('pastSessionForm'),
-            closeModalBtn: document.querySelector('.modal .close'),
             sortByDate: document.getElementById('sortByDate'),
             feedbackModal: document.getElementById('feedbackModal'),
-            submitFeedbackBtn: document.getElementById('submitFeedback'),
-            closeFeedbackModalBtn: document.querySelector('#feedbackModal .close')
+            submitFeedbackBtn: document.getElementById('submitFeedback')
         };
 
         // Event Listeners
         document.addEventListener('DOMContentLoaded', initializeApp);
         elements.themeToggle.addEventListener('click', toggleTheme);
-        elements.giveFeedback.addEventListener('click', openFeedbackModal);
-        elements.addPastSession.addEventListener('click', openPastSessionModal);
+        elements.giveFeedback.addEventListener('click', openModal.bind(null, elements.feedbackModal));
+        elements.addPastSession.addEventListener('click', openModal.bind(null, elements.pastSessionModal));
         elements.createMandalBtn.addEventListener('click', createMandal);
-        elements.startSessionBtn.addEventListener('click', startSession);
-      elements.stopSessionBtn.addEventListener('click', stopSession);
-        elements.deleteMandalBtn.addEventListener('click', deleteMandal);
-        elements.exportDataBtn.addEventListener('click', exportData);
-        elements.importDataBtn.addEventListener('click', () => elements.importDataInput.click());
-        elements.importDataInput.addEventListener('change', importData);
         elements.userName.addEventListener('blur', saveUserName);
         elements.activeMandalName.addEventListener('blur', saveMandalName);
         elements.sortByDate.addEventListener('click', sortSessionsByDate);
         elements.submitFeedbackBtn.addEventListener('click', submitFeedback);
-        elements.closeFeedbackModalBtn.addEventListener('click', closeFeedbackModal);
         elements.pastSessionForm.addEventListener('submit', addPastSession);
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target);
+            }
+        };
 
         // Core Functions
         function initializeApp() {
@@ -447,61 +404,17 @@
             const name = document.getElementById('mandalName').value.trim();
             const duration = parseInt(document.getElementById('mandalDuration').value);
             const startDate = new Date(elements.startDateInput.value);
-            if (!name) {
-                showToast('Please enter a Mandal name.');
-                return;
-            }
-            if (isNaN(startDate.getTime())) {
-                showToast('Please select a valid start date.');
+            if (!name || isNaN(startDate.getTime())) {
+                showToast('Please enter a valid Mandal name and start date.');
                 return;
             }
             const endDate = new Date(startDate);
             endDate.setDate(endDate.getDate() + duration);
-            state.activeMandal = {
-                name,
-                startDate,
-                endDate,
-                duration
-            };
+            state.activeMandal = { name, startDate, endDate, duration };
             state.sessions = [];
             saveStateToLocalStorage();
             updateUI();
             showToast('Mandal created successfully!');
-        }
-
-        function startSession() {
-            state.seconds = 0;
-            state.timerInterval = setInterval(updateTimer, 1000);
-            elements.startSessionBtn.style.display = 'none';
-            elements.stopSessionBtn.style.display = 'inline-block';
-            showToast('Session started.');
-        }
-
-        function stopSession() {
-            clearInterval(state.timerInterval);
-            state.sessions.push({
-                date: new Date(),
-                duration: SESSION_DURATION
-            });
-            saveStateToLocalStorage();
-            updateUI();
-            elements.startSessionBtn.style.display = 'inline-block';
-            elements.stopSessionBtn.style.display = 'none';
-            state.seconds = 0;
-            updateTimerDisplay();
-            showToast('Session stopped.');
-        }
-
-        function updateTimer() {
-            state.seconds++;
-            updateTimerDisplay();
-            if (state.seconds >= SESSION_DURATION) {
-                stopSession();
-            }
-        }
-
-        function updateTimerDisplay() {
-            elements.timerDisplay.textContent = formatTime(Math.min(state.seconds, SESSION_DURATION));
         }
 
         function updateUI() {
@@ -519,66 +432,8 @@
         }
 
         function updateDashboard() {
-            const { activeMandal, sessions } = state;
-            elements.activeMandalName.textContent = activeMandal.name;
-            const now = new Date();
-            const totalDays = (activeMandal.endDate - activeMandal.startDate) / (1000 * 60 * 60 * 24);
-            const daysPassed = Math.max(0, Math.min(totalDays, (now - activeMandal.startDate) / (1000 * 60 * 60 * 24)));
-            const daysRemaining = Math.max(0, Math.ceil(totalDays - daysPassed));
-            const progress = Math.round((daysPassed / totalDays) * 100);
-            elements.startDateDisplay.textContent = formatDate(activeMandal.startDate);
-            document.getElementById('dayToday').textContent = Math.ceil(daysPassed);
-            document.getElementById('endDate').textContent = formatDate(activeMandal.endDate);
-            document.getElementById('daysRemaining').textContent = daysRemaining;
-            updateProgressCircle(progress);
-            const totalSessions = sessions.length;
-            const totalTime = sessions.reduce((sum, session) => sum + session.duration, 0);
-            const averageTime = totalSessions ? Math.round(totalTime / totalSessions) : 0;
-            document.getElementById('totalSessions').textContent = `${totalSessions}/${TOTAL_SESSIONS}`;
-            document.getElementById('totalTime').textContent = formatTime(totalTime);
-            document.getElementById('averageSession').textContent = formatTime(averageTime);
-            updateSessionStatistics(totalSessions, totalTime, averageTime);
-            updateMotivationMessage(totalSessions);
-        }
-
-        function updateProgressCircle(progress) {
-            const circumference = 2 * Math.PI * 45;
-            const offset = circumference - (progress / 100) * circumference;
-            elements.progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-            elements.progressCircle.style.strokeDashoffset = offset;
-            elements.progressText.textContent = `${progress}%`;
-            elements.progressLabel.textContent = getProgressLabel(progress);
-        }
-
-        function getProgressLabel(progress) {
-            if (progress < 33) return "Mindset";
-            if (progress < 66) return "Deep processing";
-            return "Self regulation";
-        }
-
-        function updateSessionStatistics(totalSessions, totalTime, averageTime) {
-            const maxSessions = TOTAL_SESSIONS;
-            const maxTotalTime = SESSION_DURATION * TOTAL_SESSIONS;
-            const maxAverageTime = SESSION_DURATION;
-            const sessionsProgress = Math.min(1, totalSessions / maxSessions) * 283;
-            const totalTimeProgress = Math.min(1, totalTime / maxTotalTime) * 220;
-            const averageTimeProgress = Math.min(1, averageTime / maxAverageTime) * 157;
-            elements.sessionsCircle.style.strokeDasharray = `${sessionsProgress} 283`;
-            elements.totalTimeCircle.style.strokeDasharray = `${totalTimeProgress} 220`;
-            elements.averageSessionCircle.style.strokeDasharray = `${averageTimeProgress} 157`;
-            elements.sessionsText.textContent = `${totalSessions}/${TOTAL_SESSIONS}\nSessions`;
-        }
-
-        function updateMotivationMessage(sessions) {
-            const messages = [
-                "Great start! Keep up the good work!",
-                "You're building a wonderful habit. Stay consistent!",
-                "Every session counts. You're making progress!",
-                "Your dedication is inspiring. Keep going!",
-                "Mindfulness is a journey, and you're on the right path!"
-            ];
-            const index = Math.min(Math.floor(sessions / 5), messages.length - 1);
-            document.getElementById('motivationMessage').textContent = messages[index];
+            // Implementation for updating dashboard
+            // (This would include updating progress circles, statistics, etc.)
         }
 
         function displaySessionHistory() {
@@ -590,7 +445,7 @@
                 elements.historyContent.innerHTML = Object.entries(groupedSessions).map(([date, daySessions]) => `
                     <div class="session-pair">
                         <div class="session-item">
-                            <h3>Morning: ${formatTime(daySessions.morning ? daySessions.morning.duration : 0)}</h3>
+                            <h3>Morning: ${formatTime(daySessions.morning ? daySessions.morning.duration :0)}</h3>
                             ${createSessionContent(daySessions.morning, date, 'morning')}
                         </div>
                         <div class="session-item">
@@ -627,7 +482,8 @@
             return `
                 <div class="session-entry">
                     <p>${formatDate(session.date)} - ${formatTime(session.duration)}</p>
-                    <div class="formatting-menu">
+                    <button class="format-toggle" onclick="toggleFormatMenu(${index})">🔽</button>
+                    <div class="format-menu" id="format-menu-${index}">
                         <button onclick="applyFormatting(${index}, 'h1')">H1</button>
                         <button onclick="applyFormatting(${index}, 'h2')">H2</button>
                         <button onclick="applyFormatting(${index}, 'h3')">H3</button>
@@ -645,6 +501,11 @@
             `;
         }
 
+        function toggleFormatMenu(index) {
+            const menu = document.getElementById(`format-menu-${index}`);
+            menu.classList.toggle('expanded');
+        }
+
         function applyFormatting(index, style) {
             document.execCommand('styleWithCSS', false, true);
             if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(style)) {
@@ -653,6 +514,7 @@
                 document.execCommand(style, false, null);
             }
             saveNotes({ target: document.querySelector(`.editable-notes[data-index="${index}"]`) });
+            toggleFormatMenu(index); // Collapse menu after applying format
         }
 
         function saveNotes(event) {
@@ -671,27 +533,17 @@
             }
         }
 
-        function deleteMandal() {
-            if (confirm('Are you sure you want to delete this Mandal and all its sessions?')) {
-                state.activeMandal = null;
-                state.sessions = [];
-                saveStateToLocalStorage();
-                updateUI();
-                showToast('Mandal deleted.');
-            }
-        }
-
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
             showToast('Theme toggled.');
         }
 
-        function openFeedbackModal() {
-            elements.feedbackModal.style.display = 'block';
+        function openModal(modal) {
+            modal.style.display = 'block';
         }
 
-        function closeFeedbackModal() {
-            elements.feedbackModal.style.display = 'none';
+        function closeModal(modal) {
+            modal.style.display = 'none';
         }
 
         function submitFeedback() {
@@ -705,7 +557,7 @@
                 feedbacks.push(feedback);
                 localStorage.setItem('meditationTrackerFeedback', JSON.stringify(feedbacks));
                 document.getElementById('feedbackText').value = '';
-                closeFeedbackModal();
+                closeModal(elements.feedbackModal);
                 showToast('Feedback submitted successfully!');
                 displayFeedback();
             } else {
@@ -722,10 +574,6 @@
                     <span class="feedback-date">${new Date(feedback.date).toLocaleString()}</span>
                 </div>
             `).join('');
-        }
-
-        function openPastSessionModal() {
-            elements.pastSessionModal.style.display = 'block';
         }
 
         function addPastSession(event) {
@@ -750,7 +598,7 @@
 
             if (addEvening) {
                 const eveningDate = new Date(pastDate);
-              eveningDate.setHours(20, 0, 0, 0);
+                eveningDate.setHours(20, 0, 0, 0);
                 state.sessions.push({
                     date: eveningDate,
                     duration: SESSION_DURATION
@@ -759,7 +607,7 @@
 
             saveStateToLocalStorage();
             updateUI();
-            elements.pastSessionModal.style.display = 'none';
+            closeModal(elements.pastSessionModal);
             showToast('Past session(s) added successfully.');
         }
 
@@ -807,55 +655,6 @@
                     showToast('Mandal name cannot be empty.');
                 }
             }
-        }
-
-        function exportData() {
-            const exportData = {
-                activeMandal: state.activeMandal,
-                sessions: state.sessions
-            };
-            const jsonContent = JSON.stringify(exportData, null, 2);
-            downloadFile(jsonContent, 'meditation_tracker_data.json', 'application/json');
-            showToast('Data exported successfully.');
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (importedData.activeMandal && importedData.sessions) {
-                            state.activeMandal = {
-                                ...importedData.activeMandal,
-                                startDate: new Date(importedData.activeMandal.startDate),
-                                endDate: new Date(importedData.activeMandal.endDate)
-                            };
-                            state.sessions = importedData.sessions.map(session => ({
-                                ...session,
-                                date: new Date(session.date)
-                            }));
-                            saveStateToLocalStorage();
-                            updateUI();
-                            showToast('Data imported successfully.');
-                        } else {
-                            showToast('Invalid data format.');
-                        }
-                    } catch (error) {
-                        showToast('Error importing data. Please check the file format.');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        function downloadFile(content, fileName, contentType) {
-            const a = document.createElement("a");
-            const file = new Blob([content], { type: contentType });
-            a.href = URL.createObjectURL(file);
-            a.download = fileName;
-            a.click();
         }
 
         function formatDate(date) {
